@@ -6,18 +6,21 @@ import { XMarkIcon, PencilSquareIcon } from '@heroicons/react/24/outline';
 export default function EditPostPage() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { posts, editPost } = useContent();
+  const { allPosts, editPost } = useContent();
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     tags: []
   });
   const [tagInput, setTagInput] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const post = posts.find(p => p.id === id);
+    const post = allPosts.find(p => p.id === id);
     if (!post) {
-      navigate('/');
+      setError('Post not found');
+      setIsLoading(false);
       return;
     }
     setFormData({
@@ -25,7 +28,8 @@ export default function EditPostPage() {
       content: post.content,
       tags: [...post.tags]
     });
-  }, [id, posts, navigate]);
+    setIsLoading(false);
+  }, [id, allPosts]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -65,6 +69,37 @@ export default function EditPostPage() {
 
     navigate(`/post/${id}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-16">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading post data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto text-center py-16">
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <h2 className="mt-4 text-xl font-semibold text-gray-900">Post Not Found</h2>
+          <p className="mt-2 text-gray-600">The post you're trying to edit doesn't exist or has been removed.</p>
+          <button
+            onClick={() => navigate('/')}
+            className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto">

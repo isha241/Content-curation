@@ -1,87 +1,91 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useContent } from '../context/ContentContext';
 import { ArrowUpIcon, ArrowDownIcon, ChatBubbleLeftIcon, FireIcon, ClockIcon, ChartBarIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 function PostCard({ post }) {
   const { upvotePost, downvotePost, deletePost } = useContent();
   const score = post.upvotes - post.downvotes;
-  const isAuthor = post.author === 'Current User'; // In a real app, check against actual user
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      deletePost(post.id);
-    }
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    deletePost(post.id);
+    setIsDeleteModalOpen(false);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 border border-gray-100">
-      {/* Voting Section */}
-      <div className="flex">
-        <div className="flex flex-col items-center py-6 px-4 bg-gradient-to-b from-gray-50 to-blue-50 rounded-l-lg">
-          <button
-            onClick={() => upvotePost(post.id)}
-            className="group relative"
-          >
-            <div className="absolute -inset-2 bg-blue-50 rounded-lg scale-0 transition-all group-hover:scale-100" />
-            <div className="relative flex flex-col items-center gap-1">
-              <ArrowUpIcon className="h-6 w-6 text-gray-500 group-hover:text-blue-600 transition-colors" />
-              <span className="text-xs font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                Upvote
+    <>
+      <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 border border-gray-100">
+        {/* Voting Section */}
+        <div className="flex">
+          <div className="flex flex-col items-center py-6 px-4 bg-gradient-to-b from-gray-50 to-blue-50 rounded-l-lg">
+            <button
+              onClick={() => upvotePost(post.id)}
+              className="group relative"
+            >
+              <div className="absolute -inset-2 bg-blue-50 rounded-lg scale-0 transition-all group-hover:scale-100" />
+              <div className="relative flex flex-col items-center gap-1">
+                <ArrowUpIcon className="h-6 w-6 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Upvote
+                </span>
+              </div>
+            </button>
+            <div className="my-2 px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600">
+              <span className="text-lg font-bold text-white">
+                {score}
               </span>
             </div>
-          </button>
-          <div className="my-2 px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600">
-            <span className="text-lg font-bold text-white">
-              {score}
-            </span>
+            <button
+              onClick={() => downvotePost(post.id)}
+              className="group relative"
+            >
+              <div className="absolute -inset-2 bg-red-50 rounded-lg scale-0 transition-all group-hover:scale-100" />
+              <div className="relative flex flex-col items-center gap-1">
+                <ArrowDownIcon className="h-6 w-6 text-gray-500 group-hover:text-red-600 transition-colors" />
+                <span className="text-xs font-medium text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Downvote
+                </span>
+              </div>
+            </button>
           </div>
-          <button
-            onClick={() => downvotePost(post.id)}
-            className="group relative"
-          >
-            <div className="absolute -inset-2 bg-red-50 rounded-lg scale-0 transition-all group-hover:scale-100" />
-            <div className="relative flex flex-col items-center gap-1">
-              <ArrowDownIcon className="h-6 w-6 text-gray-500 group-hover:text-red-600 transition-colors" />
-              <span className="text-xs font-medium text-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                Downvote
-              </span>
-            </div>
-          </button>
-        </div>
 
-        {/* Content Section */}
-        <div className="flex-1 p-6">
-          <div className="flex justify-between items-start">
-            <Link to={`/post/${post.id}`} className="block group flex-1">
-              <h2 className="text-xl font-bold text-gray-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all">
-                {post.title}
-              </h2>
-              <p className="mt-2 text-gray-600 line-clamp-2 leading-relaxed">{post.content}</p>
-              <div className="mt-4 flex items-center space-x-6">
-                <div className="flex items-center text-sm text-gray-500">
-                  <ChatBubbleLeftIcon className="h-5 w-5 mr-1.5 text-blue-400" />
-                  {post.comments.length} comments
+          {/* Content Section */}
+          <div className="flex-1 p-6">
+            <div className="flex justify-between items-start">
+              <Link to={`/post/${post.id}`} className="block group flex-1">
+                <h2 className="text-xl font-bold text-gray-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all">
+                  {post.title}
+                </h2>
+                <p className="mt-2 text-gray-600 line-clamp-2 leading-relaxed">{post.content}</p>
+                <div className="mt-4 flex items-center space-x-6">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <ChatBubbleLeftIcon className="h-5 w-5 mr-1.5 text-blue-400" />
+                    {post.comments.length} comments
+                  </div>
+                  <div className="flex items-center text-sm text-gray-500">
+                    Posted by <span className="font-medium text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text ml-1">{post.author}</span>
+                  </div>
                 </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  Posted by <span className="font-medium text-transparent bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text ml-1">{post.author}</span>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {post.tags.map(tag => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-700 hover:from-blue-500/20 hover:to-purple-500/20 transition-colors"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {post.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-700 hover:from-blue-500/20 hover:to-purple-500/20 transition-colors"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </Link>
-            {isAuthor && (
+              </Link>
               <div className="flex items-start space-x-2 ml-4">
                 <Link
-                  to={`/post/${post.id}/edit`}
+                  to={`/edit/${post.id}`}
                   className="p-2 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors group"
                   title="Edit post"
                 >
@@ -95,11 +99,18 @@ function PostCard({ post }) {
                   <TrashIcon className="h-5 w-5 text-gray-700 group-hover:text-red-600" />
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This action cannot be undone."
+      />
+    </>
   );
 }
 

@@ -37,6 +37,7 @@ const mockPosts = [
 
 export function ContentProvider({ children }) {
   const [posts, setPosts] = useState(mockPosts);
+  const [allPosts, setAllPosts] = useState(mockPosts);
   const [sortBy, setSortBy] = useState('hot'); // 'hot', 'new', 'top'
   const [selectedTag, setSelectedTag] = useState(null);
 
@@ -49,11 +50,13 @@ export function ContentProvider({ children }) {
       downvotes: 0,
       comments: []
     };
-    setPosts([newPost, ...posts]);
+    setPosts(prevPosts => [newPost, ...prevPosts]);
+    setAllPosts(prevPosts => [newPost, ...prevPosts]);
   };
 
   const deletePost = (postId) => {
     setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+    setAllPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
   };
 
   const editPost = (postId, updatedData) => {
@@ -62,10 +65,20 @@ export function ContentProvider({ children }) {
         ? { ...post, ...updatedData, updatedAt: new Date().toISOString() }
         : post
     ));
+    setAllPosts(prevPosts => prevPosts.map(post =>
+      post.id === postId
+        ? { ...post, ...updatedData, updatedAt: new Date().toISOString() }
+        : post
+    ));
   };
 
   const upvotePost = (postId) => {
-    setPosts(posts.map(post => 
+    setPosts(prevPosts => prevPosts.map(post => 
+      post.id === postId 
+        ? { ...post, upvotes: post.upvotes + 1 }
+        : post
+    ));
+    setAllPosts(prevPosts => prevPosts.map(post => 
       post.id === postId 
         ? { ...post, upvotes: post.upvotes + 1 }
         : post
@@ -73,27 +86,63 @@ export function ContentProvider({ children }) {
   };
 
   const downvotePost = (postId) => {
-    setPosts(posts.map(post => 
+    setPosts(prevPosts => prevPosts.map(post => 
+      post.id === postId 
+        ? { ...post, downvotes: post.downvotes + 1 }
+        : post
+    ));
+    setAllPosts(prevPosts => prevPosts.map(post => 
       post.id === postId 
         ? { ...post, downvotes: post.downvotes + 1 }
         : post
     ));
   };
 
-  const addComment = (postId, comment) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? {
-            ...post,
-            comments: [...post.comments, {
-              id: Date.now().toString(),
-              content: comment,
-              author: 'Current User', // In a real app, this would come from auth
-              createdAt: new Date().toISOString()
-            }]
-          }
-        : post
-    ));
+  const addComment = (postId, content) => {
+    const newComment = {
+      id: Date.now(),
+      content,
+      author: 'Current User',
+      createdAt: new Date().toISOString(),
+    };
+
+    setAllPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === postId
+          ? { ...post, comments: [...post.comments, newComment] }
+          : post
+      )
+    );
+  };
+
+  const editComment = (postId, commentId, newContent) => {
+    setAllPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.map(comment =>
+                comment.id === commentId
+                  ? { ...comment, content: newContent }
+                  : comment
+              ),
+            }
+          : post
+      )
+    );
+  };
+
+  const deleteComment = (postId, commentId) => {
+    setAllPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? {
+              ...post,
+              comments: post.comments.filter(comment => comment.id !== commentId),
+            }
+          : post
+      )
+    );
   };
 
   const getSortedPosts = () => {
@@ -132,19 +181,27 @@ export function ContentProvider({ children }) {
     return Array.from(tags);
   };
 
+  const getPostById = (postId) => {
+    return allPosts.find(post => post.id === postId);
+  };
+
   const value = {
     posts: getSortedPosts(),
+    allPosts,
     addPost,
     deletePost,
     editPost,
     upvotePost,
     downvotePost,
     addComment,
+    editComment,
+    deleteComment,
+    getPostById,
     sortBy,
     setSortBy,
     selectedTag,
     setSelectedTag,
-    getAllTags
+    getAllTags,
   };
 
   return (

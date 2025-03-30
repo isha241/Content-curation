@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import PostPage from './pages/PostPage';
 import CreatePostPage from './pages/CreatePostPage';
+import EditPostPage from './pages/EditPostPage';
 import { ContentProvider } from './context/ContentContext';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/post/:id" element={<PostPage />} />
               <Route path="/create" element={<CreatePostPage />} />
+              <Route path="/edit/:id" element={<EditPostPage />} />
             </Routes>
           </main>
         </div>
